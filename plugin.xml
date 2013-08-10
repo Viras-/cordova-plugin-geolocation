@@ -140,6 +140,12 @@
         </config-file>
 
         <source-file src="src/wp/Geolocation.cs" />
+        
+        <config-file target="config.xml" parent="/*">
+            <feature name="Geolocation">
+                <param name="wp-package" value="Geolocation"/>
+            </feature>
+        </config-file>
     </platform>
 
 </plugin>
