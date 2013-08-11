@@ -28,8 +28,9 @@ namespace WPCordovaClassLib.Cordova.Commands
     /// </summary>
     public class Geolocation : BaseCommand
     {
-        GeoCoordinateWatcher watcher;
-        Dictionary<string, string> watchIds;
+        protected GeoCoordinateWatcher watcher;
+        protected Dictionary<string, string> watchIds;
+        protected static int watcher_timeout = 5000;
 
         public Geolocation()
         {
@@ -42,27 +43,44 @@ namespace WPCordovaClassLib.Cordova.Commands
 
         protected void startWatcher()
         {
-            watcher.Start(true);
+            watcher.TryStart(true, TimeSpan.FromMilliseconds(watcher_timeout));
         }
 
         protected void stopWatcher()
         {
-            if (watcher.Status != GeoPositionStatus.Disabled && watchIds.Count <= 0)
+            if (watchIds.Count <= 0)
             {
                 watcher.Stop();
             }
         }
 
+        /// <summary>
+        /// Helper function for forcing a valid number and preventing NaN as result
+        /// </summary>
+        /// <param name="input">value to check</param>
+        /// <returns>double value, but NaN as 0.0</returns>
+        protected double forceNumber(double input)
+        {
+            if (double.IsNaN(input))
+            {
+                return 0.0;
+            }
+            else
+            {
+                return input;
+            }
+        }
+
         protected string getLocationJSON(GeoCoordinate coord)
         {
-            string res = String.Format("\"latitude\":\"{0}\",\"longitude\":\"{1}\",\"altitude\":\"{2}\",\"accuracy\":\"{3}\",\"heading\":\"{4}\",\"velocity\":\"{5}\",\"altitudeAccuracy\":\"{6}\"",
-                coord.Latitude,
-                coord.Longitude,
-                coord.Altitude,
-                coord.HorizontalAccuracy,
-                coord.Course,
-                coord.Speed,
-                coord.VerticalAccuracy
+            string res = String.Format("\"latitude\":{0},\"longitude\":{1},\"altitude\":{2},\"accuracy\":{3},\"heading\":{4},\"velocity\":{5},\"altitudeAccuracy\":{6}",
+                forceNumber(coord.Latitude),
+                forceNumber(coord.Longitude),
+                forceNumber(coord.Altitude),
+                forceNumber(coord.HorizontalAccuracy),
+                forceNumber(coord.Course),
+                forceNumber(coord.Speed),
+                forceNumber(coord.VerticalAccuracy)
                 );
             res = "{" + res + "}";
 
@@ -75,8 +93,17 @@ namespace WPCordovaClassLib.Cordova.Commands
             GeoCoordinate coord = watcher.Position.Location;
             stopWatcher();
 
-            PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, getLocationJSON(coord));
+            PluginResult pluginResult;
+            if (!coord.IsUnknown)
+            {
+                pluginResult = new PluginResult(PluginResult.Status.OK, getLocationJSON(coord));
+            }
+            else
+            {
+                pluginResult = new PluginResult(PluginResult.Status.ERROR);
+            }
             pluginResult.KeepCallback = true;
+
             DispatchCommandResult(pluginResult);
         }
 
@@ -89,9 +116,9 @@ namespace WPCordovaClassLib.Cordova.Commands
 
             startWatcher();
 
-            PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+            /*PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
             pluginResult.KeepCallback = true;
-            DispatchCommandResult(pluginResult);
+            DispatchCommandResult(pluginResult);*/
         }
 
         public void clearWatch(string options)
