@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-           id="org.apache.cordova.core.geolocation"
-      version="0.1.0">
+xmlns:rim="http://www.blackberry.com/ns/widgets"
+xmlns:android="http://schemas.android.com/apk/res/android"
+           id="org.apache.cordova.geolocation"
+      version="0.3.3-dev">
 
-    <name>geolocation</name>
+    <name>Geolocation</name>
+    <description>Cordova Geolocation Plugin</description>
+    <license>Apache 2.0</license>
+    <keywords>cordova,geolocation</keywords>
 
     <!-- android -->
     <platform name="android">
@@ -94,10 +99,6 @@
         <config-file target="www/config.xml" parent="/widget">
             <feature name="Geolocation" value="Geolocation"/>
         </config-file>
-        <config-file target="www/config.xml" parent="/widget">
-          <rim:permissions>
-          </rim:permissions>
-        </config-file>
         <config-file target="www/config.xml" parent="/widget/rim:permissions">
           <rim:permit>read_geolocation</rim:permit>
         </config-file>
@@ -122,5 +123,25 @@
 
         <source-file src="src/wp/Geolocation.cs" />
     </platform>
+
+    <!-- windows8 -->
+    <platform name="windows8">
+        <config-file target="package.appxmanifest" parent="/Package/Capabilities">
+            <DeviceCapability Name="location" />
+        </config-file>
+    </platform>
+    
+    <!-- firefoxos -->
+    <platform name="firefoxos">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Geolocation">
+                <param name="firefoxos-package" value="Geolocation" />
+            </feature>
+        </config-file>                                         
+        <js-module src="src/firefoxos/GeolocationProxy.js" name="GeolocationProxy">
+            <runs />
+        </js-module>
+    </platform>
+
 
 </plugin>
